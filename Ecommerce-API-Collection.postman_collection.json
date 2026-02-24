@@ -443,7 +443,7 @@
 								"PENDING"
 							]
 						},
-						"description": "Available statuses: PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED"
+						"description": "Available statuses: PENDING, INVENTORY_RESERVED, PAYMENT_PROCESSING, COMPLETED, FAILED, CANCELLED"
 					}
 				},
 				{
@@ -549,7 +549,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/api/payments/status/SUCCESS",
+							"raw": "{{base_url}}/api/payments/status/COMPLETED",
 							"host": [
 								"{{base_url}}"
 							],
@@ -557,10 +557,10 @@
 								"api",
 								"payments",
 								"status",
-								"SUCCESS"
+								"COMPLETED"
 							]
 						},
-						"description": "Available statuses: PENDING, SUCCESS, FAILED"
+						"description": "Available statuses: PENDING, PROCESSING, COMPLETED, FAILED"
 					}
 				}
 			]
