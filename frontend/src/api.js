@@ -1,8 +1,24 @@
 const API_BASE = "/api";
+const TOKEN_KEY = "ecommerce_jwt";
+
+function getToken() {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+function withAuthHeaders(headers = {}) {
+  const token = getToken();
+  if (!token) {
+    return headers;
+  }
+  return { ...headers, Authorization: `Bearer ${token}` };
+}
 
 async function request(path, options = {}) {
   const response = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+    headers: withAuthHeaders({
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }),
     ...options
   });
 
@@ -17,6 +33,32 @@ async function request(path, options = {}) {
   }
 
   return response.text();
+}
+
+export function storeToken(token) {
+  localStorage.setItem(TOKEN_KEY, token);
+}
+
+export function clearToken() {
+  localStorage.removeItem(TOKEN_KEY);
+}
+
+export function hasToken() {
+  return Boolean(getToken());
+}
+
+export function signup(payload) {
+  return request("/auth/signup", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+
+export function login(payload) {
+  return request("/auth/login", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
 }
 
 export function getProducts() {

@@ -22,6 +22,20 @@ header h1 {
   margin: 0;
 }
 
+.title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.user-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
 .message {
   background: #e6f4ea;
   border: 1px solid #9ccca8;
@@ -35,6 +49,10 @@ header h1 {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 14px;
   margin-top: 12px;
+}
+
+.auth-grid {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
 .card {
@@ -62,6 +80,10 @@ button {
   color: #fff;
   background: #0d6a8f;
   cursor: pointer;
+}
+
+.secondary {
+  background: #576a73;
 }
 
 .row {

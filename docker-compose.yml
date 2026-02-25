@@ -181,6 +181,29 @@ services:
     networks:
       - ecommerce-network
 
+  # Auth Service
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    container_name: ecommerce-auth-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/auth_db?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://service-registry:8761/eureka/
+      APP_JWT_SECRET: "my-super-secret-key-for-jwt-signing-2026-strong"
+      APP_JWT_EXPIRATION_MS: 86400000
+    networks:
+      - ecommerce-network
+
 volumes:
   mysql-data:
 
