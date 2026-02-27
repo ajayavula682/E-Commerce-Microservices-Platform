@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 FROM maven:3.9.9-eclipse-temurin-17 AS build
 
 WORKDIR /workspace
@@ -13,6 +14,9 @@ RUN mvn -f common-lib/pom.xml clean install -DskipTests
 RUN mvn -f service-registry/pom.xml clean package -DskipTests
 
 FROM eclipse-temurin:17-jre
+=======
+FROM eclipse-temurin:17-jre-jammy
+>>>>>>> main
 
 WORKDIR /app
 
