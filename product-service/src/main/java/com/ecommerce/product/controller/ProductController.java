@@ -2,6 +2,7 @@ package com.ecommerce.product.controller;
 
 import com.ecommerce.product.dto.ProductRequest;
 import com.ecommerce.product.dto.ProductResponse;
+import com.ecommerce.product.dto.ProductPageResponse;
 import com.ecommerce.product.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -34,6 +36,21 @@ public class ProductController {
     public ResponseEntity<List<ProductResponse>> getAllProducts() {
         List<ProductResponse> products = productService.getAllProducts();
         return ResponseEntity.ok(products);
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<ProductPageResponse> getProductsPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) BigDecimal minPrice,
+            @RequestParam(required = false) BigDecimal maxPrice) {
+        ProductPageResponse response = productService.findProducts(
+                page, size, sortBy, sortDir, category, name, minPrice, maxPrice);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/category/{category}")

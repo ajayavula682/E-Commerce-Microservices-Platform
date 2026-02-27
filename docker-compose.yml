@@ -31,6 +31,20 @@ services:
     networks:
       - ecommerce-network
 
+  # Redis (Product catalog cache)
+  redis:
+    image: redis:7.2-alpine
+    container_name: ecommerce-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Kafka
   kafka:
     image: confluentinc/cp-kafka:7.5.0
@@ -99,12 +113,17 @@ services:
         condition: service_healthy
       service-registry:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     ports:
       - "8081:8081"
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/product_db?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      CACHE_TYPE: redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://service-registry:8761/eureka/
     networks:
       - ecommerce-network

@@ -13,6 +13,8 @@
   --surface-2: rgba(14, 30, 50, 0.88);
   --success-bg: rgba(32, 109, 70, 0.22);
   --success-line: rgba(105, 211, 155, 0.45);
+  --error-bg: rgba(132, 35, 50, 0.25);
+  --error-line: rgba(237, 116, 130, 0.5);
 }
 
 * {
@@ -354,6 +356,12 @@ button:disabled {
   font-size: 0.88rem;
 }
 
+.message-error {
+  background: var(--error-bg);
+  border-color: var(--error-line);
+  color: #ffd7de;
+}
+
 .products {
   margin-top: 0.85rem;
 }
@@ -401,6 +409,40 @@ pre {
   overflow: auto;
   font-size: 0.79rem;
   color: #d5e6ff;
+}
+
+.mini-btn {
+  width: auto;
+  display: inline-flex;
+  margin-right: 0.35rem;
+  padding: 0.36rem 0.58rem;
+  font-size: 0.78rem;
+}
+
+.muted {
+  color: var(--ink-soft);
+  font-size: 0.86rem;
+}
+
+.inline-controls {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+}
+
+.inline-controls input {
+  max-width: 90px;
+}
+
+.qty-input {
+  max-width: 70px;
+}
+
+.checkout-bar {
+  margin-top: 0.7rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .reveal {

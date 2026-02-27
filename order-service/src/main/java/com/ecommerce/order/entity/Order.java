@@ -60,10 +60,12 @@ public class Order {
     }
 
     public enum OrderStatus {
+        AWAITING_APPROVAL,
         PENDING,
         INVENTORY_RESERVED,
         PAYMENT_PROCESSING,
         COMPLETED,
+        REJECTED,
         FAILED,
         CANCELLED
     }

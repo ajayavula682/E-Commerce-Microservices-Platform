@@ -24,7 +24,16 @@ async function request(path, options = {}) {
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || `Request failed: ${response.status}`);
+    let errorMessage = `Request failed: ${response.status}`;
+    if (text) {
+      try {
+        const parsed = JSON.parse(text);
+        errorMessage = parsed.message || parsed.error || text;
+      } catch {
+        errorMessage = text;
+      }
+    }
+    throw new Error(errorMessage);
   }
 
   const contentType = response.headers.get("content-type") || "";
@@ -65,6 +74,10 @@ export function getProducts() {
   return request("/products");
 }
 
+export function getProductById(productId) {
+  return request(`/products/${productId}`);
+}
+
 export function createProduct(payload) {
   return request("/products", {
     method: "POST",
@@ -87,4 +100,24 @@ export function createOrder(payload) {
 
 export function getOrder(orderId) {
   return request(`/orders/${orderId}`);
+}
+
+export function getOrdersByUserId(userId) {
+  return request(`/orders/user/${userId}`);
+}
+
+export function getAllOrders() {
+  return request("/orders");
+}
+
+export function approveOrder(orderId) {
+  return request(`/orders/${orderId}/approve`, {
+    method: "PUT"
+  });
+}
+
+export function rejectOrder(orderId) {
+  return request(`/orders/${orderId}/reject`, {
+    method: "PUT"
+  });
 }
