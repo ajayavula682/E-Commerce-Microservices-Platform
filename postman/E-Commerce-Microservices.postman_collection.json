@@ -1,0 +1,103 @@
+{
+  "info": {
+    "_postman_id": "7e0f4ed9-2a8f-4f7e-813e-2e56aa7b0ec8",
+    "name": "E-Commerce Microservices",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "productId", "value": "1" },
+    { "key": "orderId", "value": "1" }
+  ],
+  "item": [
+    {
+      "name": "Create Product",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Postman Product\",\n  \"description\": \"Created from Postman\",\n  \"price\": 99.99,\n  \"category\": \"Electronics\",\n  \"stock\": 20\n}"
+        },
+        "url": "{{baseUrl}}/api/products"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Create Product status is 2xx', function () { pm.expect(pm.response.code).to.be.within(200, 299); });",
+              "let json = {}; try { json = pm.response.json(); } catch(e) {}",
+              "if (json && json.id) { pm.collectionVariables.set('productId', String(json.id)); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Products",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/products"
+      }
+    },
+    {
+      "name": "Create Inventory",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/inventory?productId={{productId}}&quantity=100"
+      }
+    },
+    {
+      "name": "Get Inventory By Product",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/inventory/product/{{productId}}"
+      }
+    },
+    {
+      "name": "Create Order",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1,\n  \"orderItems\": [\n    {\n      \"productId\": {{productId}},\n      \"quantity\": 2,\n      \"price\": 99.99\n    }\n  ]\n}"
+        },
+        "url": "{{baseUrl}}/api/orders"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Create Order status is 2xx', function () { pm.expect(pm.response.code).to.be.within(200, 299); });",
+              "let json = {}; try { json = pm.response.json(); } catch(e) {}",
+              "if (json && json.id) { pm.collectionVariables.set('orderId', String(json.id)); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get Order By Id",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/orders/{{orderId}}"
+      }
+    },
+    {
+      "name": "Get Payment By Order",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/payments/order/{{orderId}}"
+      }
+    }
+  ]
+}

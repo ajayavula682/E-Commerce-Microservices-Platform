@@ -1,4 +1,4 @@
-version: '3.8'
+# version: '3.8'
 
 services:
   # MySQL Databases
@@ -31,6 +31,20 @@ services:
     networks:
       - ecommerce-network
 
+  # Redis (Product catalog cache)
+  redis:
+    image: redis:7.2-alpine
+    container_name: ecommerce-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Kafka
   kafka:
     image: confluentinc/cp-kafka:7.5.0
@@ -58,8 +72,8 @@ services:
   # Service Registry (Eureka)
   service-registry:
     build:
-      context: ./service-registry
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: service-registry/Dockerfile
     container_name: ecommerce-service-registry
     ports:
       - "8761:8761"
@@ -75,8 +89,8 @@ services:
   # API Gateway
   api-gateway:
     build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: api-gateway/Dockerfile
     container_name: ecommerce-api-gateway
     depends_on:
       service-registry:
@@ -91,13 +105,15 @@ services:
   # Product Service
   product-service:
     build:
-      context: ./product-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: product-service/Dockerfile
     container_name: ecommerce-product-service
     depends_on:
       mysql:
         condition: service_healthy
       service-registry:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     ports:
       - "8081:8081"
@@ -105,6 +121,9 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/product_db?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      CACHE_TYPE: redis
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://service-registry:8761/eureka/
     networks:
       - ecommerce-network
@@ -112,8 +131,8 @@ services:
   # Order Service
   order-service:
     build:
-      context: ./order-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: order-service/Dockerfile
     container_name: ecommerce-order-service
     depends_on:
       mysql:
@@ -136,8 +155,8 @@ services:
   # Inventory Service
   inventory-service:
     build:
-      context: ./inventory-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: inventory-service/Dockerfile
     container_name: ecommerce-inventory-service
     depends_on:
       mysql:
@@ -160,8 +179,8 @@ services:
   # Payment Service
   payment-service:
     build:
-      context: ./payment-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: payment-service/Dockerfile
     container_name: ecommerce-payment-service
     depends_on:
       mysql:
@@ -178,6 +197,29 @@ services:
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://service-registry:8761/eureka/
+    networks:
+      - ecommerce-network
+
+  # Auth Service
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    container_name: ecommerce-auth-service
+    depends_on:
+      mysql:
+        condition: service_healthy
+      service-registry:
+        condition: service_healthy
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/auth_db?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://service-registry:8761/eureka/
+      APP_JWT_SECRET: "my-super-secret-key-for-jwt-signing-2026-strong"
+      APP_JWT_EXPIRATION_MS: 86400000
     networks:
       - ecommerce-network
 
