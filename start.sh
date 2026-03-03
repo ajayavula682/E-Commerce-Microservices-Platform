@@ -1,30 +1,60 @@
 #!/bin/bash
 
 echo "🚀 Starting E-Commerce Microservices Platform..."
+echo ""
+
+# Stop any existing containers
+echo "🛑 Stopping existing containers..."
+docker-compose down 2>/dev/null || true
+echo "✅ Existing containers stopped"
+echo ""
+
+# Clean Maven build artifacts
+echo "🧹 Cleaning Maven build artifacts..."
+mvn clean -q
+echo "✅ Maven clean completed"
+echo ""
 
 # Start infrastructure
-echo "📦 Starting Docker infrastructure (MySQL, Kafka, Zookeeper)..."
+echo "📦 Starting Docker infrastructure (MySQL, Kafka, Zookeeper, Redis)..."
 docker-compose up -d
 
-echo "⏳ Waiting for services to be healthy..."
-sleep 20
+echo "⏳ Waiting for infrastructure services to be healthy..."
+sleep 15
 
-# Build all services
-echo "🔨 Building all microservices..."
-mvn clean install -DskipTests
+# Build all services with Docker
+echo "🔨 Building Docker images for all microservices..."
+docker-compose build --no-cache
 
-echo "✅ Build completed!"
+echo "✅ Docker images built successfully!"
+echo ""
+
+# Start all services
+echo "🚀 Starting all microservices..."
+docker-compose up -d
+
+echo "⏳ Waiting for all services to start..."
+sleep 10
+
+# Verify all services are running
+echo ""
+echo "📊 Checking service status..."
+docker-compose ps
 
 echo ""
-echo "📋 Next Steps:"
-echo "1. Start Service Registry: cd service-registry && mvn spring-boot:run"
-echo "2. Start API Gateway: cd api-gateway && mvn spring-boot:run"
-echo "3. Start Product Service: cd product-service && mvn spring-boot:run"
-echo "4. Start Order Service: cd order-service && mvn spring-boot:run"
-echo "5. Start Inventory Service: cd inventory-service && mvn spring-boot:run"
-echo "6. Start Payment Service: cd payment-service && mvn spring-boot:run"
+echo "✅ All services started successfully!"
 echo ""
 echo "🌐 Service URLs:"
 echo "   - Eureka Dashboard: http://localhost:8761"
 echo "   - API Gateway: http://localhost:8080"
+echo "   - Product Service: http://localhost:8081"
+echo "   - Order Service: http://localhost:8082"
+echo "   - Inventory Service: http://localhost:8083"
+echo "   - Payment Service: http://localhost:8084"
+echo "   - Auth Service: http://localhost:8085"
+echo ""
+echo "📋 Useful Commands:"
+echo "   - View logs: docker-compose logs -f [service-name]"
+echo "   - Stop services: ./stop.sh"
+echo "   - View running services: docker-compose ps"
 echo ""
