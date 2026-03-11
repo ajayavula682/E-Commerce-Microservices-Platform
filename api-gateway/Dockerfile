@@ -2,7 +2,7 @@ FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 
-COPY target/*.jar app.jar
+COPY --from=build /workspace/api-gateway/target/*.jar app.jar
 
 EXPOSE 8080
 

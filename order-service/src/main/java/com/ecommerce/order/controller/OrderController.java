@@ -54,4 +54,16 @@ public class OrderController {
         orderService.cancelOrder(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<OrderResponse> approveOrder(@PathVariable Long id) {
+        OrderResponse response = orderService.approveOrder(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}/reject")
+    public ResponseEntity<OrderResponse> rejectOrder(@PathVariable Long id) {
+        OrderResponse response = orderService.rejectOrder(id);
+        return ResponseEntity.ok(response);
+    }
 }

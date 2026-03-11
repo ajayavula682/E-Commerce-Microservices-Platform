@@ -28,6 +28,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final OrderEventProducer orderEventProducer;
+    private final InventoryClient inventoryClient;
 
     @Transactional
     public OrderResponse createOrder(OrderRequest request) {
@@ -35,7 +36,7 @@ public class OrderService {
 
         // Create order entity
         Order order = orderMapper.toEntity(request);
-        order.setStatus(OrderStatus.PENDING);
+        order.setStatus(OrderStatus.AWAITING_APPROVAL);
 
         // Calculate total amount and add order items
         BigDecimal totalAmount = BigDecimal.ZERO;
@@ -53,7 +54,31 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
         log.info("Order created with ID: {} and status: {}", savedOrder.getId(), savedOrder.getStatus());
 
-        // Publish OrderCreatedEvent
+        log.info("Order {} is awaiting admin approval before inventory/payment flow", savedOrder.getId());
+
+        return orderMapper.toResponse(savedOrder);
+    }
+
+    @Transactional
+    public OrderResponse approveOrder(Long orderId) {
+        log.info("Approving order with ID: {}", orderId);
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found with ID: " + orderId));
+
+        if (order.getStatus() != OrderStatus.AWAITING_APPROVAL) {
+            throw new IllegalStateException("Only AWAITING_APPROVAL orders can be approved");
+        }
+
+        for (OrderItem item : order.getOrderItems()) {
+            boolean available = inventoryClient.isAvailable(item.getProductId(), item.getQuantity());
+            if (!available) {
+                throw new IllegalStateException("Insufficient stock for product ID: " + item.getProductId());
+            }
+        }
+
+        order.setStatus(OrderStatus.PENDING);
+        Order savedOrder = orderRepository.save(order);
+
         OrderCreatedEvent event = OrderCreatedEvent.builder()
                 .orderId(savedOrder.getId())
                 .userId(savedOrder.getUserId())
@@ -69,7 +94,22 @@ public class OrderService {
                 .build();
 
         orderEventProducer.publishOrderCreatedEvent(event);
+        log.info("Order {} approved and sent to inventory service", orderId);
+        return orderMapper.toResponse(savedOrder);
+    }
 
+    @Transactional
+    public OrderResponse rejectOrder(Long orderId) {
+        log.info("Rejecting order with ID: {}", orderId);
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException("Order not found with ID: " + orderId));
+
+        if (order.getStatus() != OrderStatus.AWAITING_APPROVAL) {
+            throw new IllegalStateException("Only AWAITING_APPROVAL orders can be rejected");
+        }
+
+        order.setStatus(OrderStatus.REJECTED);
+        Order savedOrder = orderRepository.save(order);
         return orderMapper.toResponse(savedOrder);
     }
 

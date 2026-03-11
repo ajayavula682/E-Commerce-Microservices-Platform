@@ -42,3 +42,8 @@ application-dev.yml
 
 # Docker
 .docker/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
