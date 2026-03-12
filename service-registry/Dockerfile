@@ -1,4 +1,4 @@
-FROM maven:3.9.9-eclipse-temurin-17-alpine AS build
+FROM maven:3.9-amazoncorretto-17-alpine AS build
 
 WORKDIR /workspace
 
@@ -12,7 +12,7 @@ RUN mvn -N -f pom.xml clean install -DskipTests
 RUN mvn -f common-lib/pom.xml clean install -DskipTests
 RUN mvn -f service-registry/pom.xml clean package -DskipTests
 
-FROM eclipse-temurin:17-jre-alpine
+FROM amazoncorretto:17-alpine-jdk
 
 WORKDIR /app
 

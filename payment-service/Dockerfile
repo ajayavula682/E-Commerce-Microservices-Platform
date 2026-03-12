@@ -1,5 +1,5 @@
 # -------- Build Stage --------
-FROM maven:3.9.9-eclipse-temurin-17-alpine AS build
+FROM maven:3.9-amazoncorretto-17-alpine AS build
 
 WORKDIR /workspace
 
@@ -14,7 +14,7 @@ RUN mvn -f common-lib/pom.xml clean install -DskipTests
 RUN mvn -f payment-service/pom.xml clean package -DskipTests
 
 # -------- Runtime Stage --------
-FROM eclipse-temurin:17-jre-alpine
+FROM amazoncorretto:17-alpine-jdk
 
 WORKDIR /app
 
