@@ -59,14 +59,13 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState({ type: "info", text: "" });
   const [authenticated, setAuthenticated] = useState(hasToken());
-  const [authMode, setAuthMode] = useState("login");
+  const [authForm, setAuthForm] = useState(emptyLogin);
   const [currentUser, setCurrentUser] = useState("");
   const [currentEmail, setCurrentEmail] = useState(localStorage.getItem(USER_EMAIL_KEY) || "");
   const [currentUserId, setCurrentUserId] = useState(localStorage.getItem(USER_ID_KEY) || "");
   const [viewMode, setViewMode] = useState("shop");
 
   const [signupForm, setSignupForm] = useState(emptySignup);
-  const [loginForm, setLoginForm] = useState(emptyLogin);
   const [productForm, setProductForm] = useState(emptyProduct);
   const [inventoryForm, setInventoryForm] = useState({ productId: "", quantity: "" });
   const [orderForm, setOrderForm] = useState({ userId: "1", productId: "", quantity: "1", price: "" });
@@ -142,6 +141,11 @@ export default function App() {
     localStorage.setItem(cartStorageKey(currentUserId), JSON.stringify(cartItems));
   }, [cartItems, authenticated, currentUserId]);
 
+  useEffect(() => {
+    if (!authenticated) return;
+    setViewMode(isAdmin ? "admin" : "shop");
+  }, [authenticated, isAdmin]);
+
   function onProductChange(event) {
     const { name, value } = event.target;
     setProductForm((prev) => ({ ...prev, [name]: value }));
@@ -152,14 +156,13 @@ export default function App() {
     notify("");
     try {
       const response = await signup({
-        name: `${signupForm.firstName.trim()} ${signupForm.lastName.trim()}`.trim(),
-        email: signupForm.email,
-        password: signupForm.password
+        name: signupForm.firstName ? `${signupForm.firstName.trim()} ${signupForm.lastName.trim()}`.trim() : "New User",
+        email: authForm.email,
+        password: authForm.password
       });
-      setLoginForm((prev) => ({ ...prev, email: response.email }));
+      setAuthForm({ email: response.email, password: "" });
       setSignupForm(emptySignup);
-      setAuthMode("login");
-      notify("Account created. Login to continue.", "success");
+      notify("Account created. Please log in.", "success");
     } catch (error) {
       notify(`Signup failed: ${error.message}`, "error");
     }
@@ -169,7 +172,7 @@ export default function App() {
     event.preventDefault();
     notify("");
     try {
-      const response = await login(loginForm);
+      const response = await login(authForm);
       storeToken(response.token);
       const jwtPayload = decodeJwt(response.token);
       const userId = String(response.userId || jwtPayload?.sub || "");
@@ -180,7 +183,7 @@ export default function App() {
       localStorage.setItem(USER_EMAIL_KEY, response.email);
       localStorage.setItem(USER_ID_KEY, userId);
       setOrderForm((prev) => ({ ...prev, userId }));
-      setLoginForm(emptyLogin);
+      setAuthForm(emptyLogin);
       const adminEmail = (response.email || "").trim().toLowerCase();
       setViewMode(ADMIN_EMAILS.has(adminEmail) ? "admin" : "shop");
       notify("Login successful.", "success");
@@ -384,50 +387,38 @@ export default function App() {
         </div>
         <main className="auth-only-layout">
           <section className="auth-panel reveal">
-            <div className="auth-switch">
-              <button
-                type="button"
-                className={authMode === "signup" ? "auth-tab active-tab" : "auth-tab"}
-                onClick={() => setAuthMode("signup")}
-              >
-                Sign Up
-              </button>
-              <button
-                type="button"
-                className={authMode === "login" ? "auth-tab active-tab" : "auth-tab"}
-                onClick={() => setAuthMode("login")}
-              >
-                Login
-              </button>
+            <div className="auth-header">
+              <h2>Welcome to E-Commerce</h2>
+              <p className="muted">Login or create an account to continue</p>
             </div>
+            
             {feedback.text && <div className={`message ${feedback.type === "error" ? "message-error" : ""}`}>{feedback.text}</div>}
-            {authMode === "signup" ? (
-              <form onSubmit={handleSignup}>
-                <h2>Create your account</h2>
-                <input placeholder="First Name" value={signupForm.firstName} onChange={(e) => setSignupForm((prev) => ({ ...prev, firstName: e.target.value }))} required />
-                <input placeholder="Last Name" value={signupForm.lastName} onChange={(e) => setSignupForm((prev) => ({ ...prev, lastName: e.target.value }))} required />
-                <input placeholder="Email" type="email" value={signupForm.email} onChange={(e) => setSignupForm((prev) => ({ ...prev, email: e.target.value }))} required />
-                <input placeholder="Password" type="password" minLength={6} value={signupForm.password} onChange={(e) => setSignupForm((prev) => ({ ...prev, password: e.target.value }))} required />
-                <button type="submit">Create Account</button>
-              </form>
-            ) : (
-              <form onSubmit={handleLogin}>
-                <h2>Welcome back</h2>
-                <input placeholder="Email" type="email" value={loginForm.email} onChange={(e) => setLoginForm((prev) => ({ ...prev, email: e.target.value }))} required />
-                <input placeholder="Password" type="password" value={loginForm.password} onChange={(e) => setLoginForm((prev) => ({ ...prev, password: e.target.value }))} required />
-                <button type="submit">Login</button>
-              </form>
-            )}
+            
+            <form onSubmit={handleLogin}>
+              <input 
+                placeholder="Email Address" 
+                type="email" 
+                value={authForm.email} 
+                onChange={(e) => setAuthForm((prev) => ({ ...prev, email: e.target.value }))} 
+                required 
+              />
+              <input 
+                placeholder="Password" 
+                type="password" 
+                value={authForm.password} 
+                onChange={(e) => setAuthForm((prev) => ({ ...prev, password: e.target.value }))} 
+                required 
+              />
+              <div className="auth-actions">
+                <button type="submit" className="primary-btn">Login</button>
+                <button type="button" className="secondary-btn" onClick={handleSignup}>Sign Up</button>
+              </div>
+            </form>
           </section>
         </main>
       </div>
     );
   }
-
-  useEffect(() => {
-    if (!authenticated) return;
-    setViewMode(isAdmin ? "admin" : "shop");
-  }, [authenticated, isAdmin]);
 
   const showAdminConsole = isAdmin && viewMode === "admin";
 
