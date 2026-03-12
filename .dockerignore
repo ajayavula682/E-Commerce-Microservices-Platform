@@ -1,0 +1,64 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+*~
+.DS_Store
+*.iml
+
+# Build artifacts
+target/
+build/
+*.jar
+*.war
+*.ear
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (for frontend)
+node_modules/
+dist/
+.npm
+
+# Documentation
+*.md
+README.md
+SETUP.md
+DOCKER-GUIDE.md
+API-Testing-Guide.md
+
+# Test files
+*.test.js
+*.spec.js
+
+# Temporary files
+.tmp/
+temp/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Other
+.env
+.env.local
+*.pem
+*.key
+

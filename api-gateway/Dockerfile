@@ -1,4 +1,20 @@
-FROM eclipse-temurin:17-jre
+# -------- Build Stage --------
+FROM maven:3.9-amazoncorretto-17-alpine AS build
+
+WORKDIR /workspace
+
+COPY pom.xml pom.xml
+COPY common-lib/pom.xml common-lib/pom.xml
+COPY api-gateway/pom.xml api-gateway/pom.xml
+COPY common-lib/src common-lib/src
+COPY api-gateway/src api-gateway/src
+
+RUN mvn -N -f pom.xml clean install -DskipTests
+RUN mvn -f common-lib/pom.xml clean install -DskipTests
+RUN mvn -f api-gateway/pom.xml clean package -DskipTests
+
+# -------- Runtime Stage --------
+FROM amazoncorretto:17-alpine-jdk
 
 WORKDIR /app
 
